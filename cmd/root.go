@@ -35,6 +35,7 @@ var cfgFile string
 var datadir string
 var se *searchengine.SearchEngine
 var datafile string
+var summarizerpath string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -65,6 +66,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", defaultConfigDir+".pipecamp", "config file (default is $HOME/.pipecamp/.pipecamp.yaml)")
 	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", defaultConfigDir, "data dir (uses config dir, default is $HOME/.pipecamp/)")
 	datapath = datadir + "index.db"
+	summarizerpath = datadir + "summarizer.db"
 	viper.SetConfigFile(cfgFile)
 	viper.AddConfigPath(cfgFile)
 	viper.SetConfigName(".pipecamp")

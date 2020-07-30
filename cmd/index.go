@@ -24,6 +24,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/gleicon/pipecamp/summarizer"
+
 	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/spf13/cobra"
 )
@@ -40,8 +42,14 @@ var indexCmd = &cobra.Command{
 }
 
 func indexInnerCommand(cmd *cobra.Command, args []string) {
+	var sm *summarizer.PersistentSummarizer
+	var err error
 	baseDir = rootCmd.Flags().StringP("basedir", "d", ".", "directory to index")
-	se = searchengine.NewSearchEngine(datapath)
+	if sm, err = summarizer.NewPersistentSummarizer(summarizerpath, 3); err != nil {
+		fmt.Println(err)
+		return
+	}
+	se = searchengine.NewSearchEngine(datapath, sm)
 	fmt.Println("Indexing " + args[0] + " at " + datapath)
 	se.AddDocuments(args[0])
 }

@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	searchengine "github.com/gleicon/pipecamp/search"
+	"github.com/gleicon/pipecamp/summarizer"
 	"github.com/spf13/cobra"
 )
 
@@ -38,9 +39,17 @@ var searchCmd = &cobra.Command{
 }
 
 func searchInnerCommand(cmd *cobra.Command, args []string) {
-	se = searchengine.NewSearchEngine(datapath)
+	var sm *summarizer.PersistentSummarizer
+	var err error
+	if sm, err = summarizer.NewPersistentSummarizer(summarizerpath, 3); err != nil {
+		fmt.Println(err)
+		return
+	}
+	se = searchengine.NewSearchEngine(datapath, sm)
 	terms := strings.Join(args, " ")
+
 	fmt.Println(terms)
+	// print terms, ids and summaries
 	fmt.Println(se.Query(terms))
 }
 
