@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gleicon/pipecamp/summarizer"
+
 	"github.com/blevesearch/bleve"
 )
 
@@ -30,14 +32,16 @@ type Result struct {
 SearchEngine represents a generic search engine wrapping bleve
 */
 type SearchEngine struct {
-	index     bleve.Index
-	indexPath string
+	index      bleve.Index
+	indexPath  string
+	summarizer *summarizer.PersistentSummarizer
 }
 
 // NewSearchEngine creates a new search engine
-func NewSearchEngine(indexPath string) *SearchEngine {
+func NewSearchEngine(indexPath string, summarizer *summarizer.PersistentSummarizer) *SearchEngine {
 	se := SearchEngine{}
 	se.CreateOrOpenIndex(indexPath)
+	se.summarizer = summarizer
 	return &se
 }
 
@@ -151,6 +155,9 @@ func (se *SearchEngine) indexDocument(mf *MetaDocument) error {
 	// read and fill body
 	mf.Body = string(body)
 	// create a summary
+	if mf.Summary, err = se.summarizer.SummarizeAndStore(mf.ID, mf.Body); err != nil {
+		return err
+	}
 	// index
 	if err := se.index.Index(mf.ID, mf); err != nil {
 		return err
