@@ -28,7 +28,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/JesusIslam/tldr"
+	tldr "github.com/JesusIslam/tldr"
+
 	"github.com/spf13/cobra"
 )
 
@@ -60,6 +61,12 @@ func readFromFileOrStdin(filename string) (string, error) {
 	return (strings.Join(body, " ")), nil
 }
 
+func summarize(body string, sentenceCount int) ([]string, error) {
+	bag := tldr.New()
+	summary, err := bag.Summarize(body, sentenceCount)
+	return summary, err
+}
+
 func tldrInnerCommand(cmd *cobra.Command, args []string) {
 	var body string
 	body, err := readFromFileOrStdin(*fileName)
@@ -68,8 +75,7 @@ func tldrInnerCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	bag := tldr.New()
-	summary, err := bag.Summarize(body, *sentenceCount)
+	summary, err := summarize(body, *sentenceCount)
 	if err != nil {
 		log.Println("Error summarizing text: ", err)
 		return

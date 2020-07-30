@@ -24,6 +24,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
@@ -32,6 +33,7 @@ import (
 )
 
 var cfgFile string
+var datadir string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -60,10 +62,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/pipecamp/.pipecamp.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "datadir", "", "data dir (uses config dir, default is $HOME/pipecamp/)")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -71,6 +70,7 @@ func initConfig() {
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
+		datadir = filepath.Dir(cfgFile)
 	} else {
 		// Find home directory.
 		home, err := homedir.Dir()
@@ -78,7 +78,7 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-
+		datadir = home
 		// Search config in home directory with name ".newApp" (without extension).
 		viper.AddConfigPath(home + "/.pipecamp")
 		viper.SetConfigName(".pipecamp")
