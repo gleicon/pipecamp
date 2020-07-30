@@ -24,22 +24,23 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
+	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/spf13/cobra"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/viper"
 )
 
 var cfgFile string
 var datadir string
+var se *searchengine.SearchEngine
+var datafile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "pipecamp",
 	Short: "cli file search and summarizer",
-	Long: `Command line drive file search and summarizer. 
+	Long: `Command line file search and summarizer. 
   pipecamp index, search and create summaries of your local files.
   The config file sites at $HOME/pipecamp/.pipecamp.yaml, 
   along with the index files created from your files.`,
@@ -55,35 +56,18 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/pipecamp/.pipecamp.yaml)")
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "datadir", "", "data dir (uses config dir, default is $HOME/pipecamp/)")
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-		datadir = filepath.Dir(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		datadir = home
-		// Search config in home directory with name ".newApp" (without extension).
-		viper.AddConfigPath(home + "/.pipecamp")
-		viper.SetConfigName(".pipecamp")
+	defaultConfigDir, _ := os.UserHomeDir()
+	defaultConfigDir = defaultConfigDir + "/.pipecamp/"
+	if _, err := os.Stat(defaultConfigDir); os.IsNotExist(err) {
+		fmt.Println("Creating pipecamp config and data dir " + defaultConfigDir)
+		os.Mkdir(defaultConfigDir, 0755)
 	}
-
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", defaultConfigDir+".pipecamp", "config file (default is $HOME/.pipecamp/.pipecamp.yaml)")
+	rootCmd.PersistentFlags().StringVar(&datadir, "datadir", defaultConfigDir, "data dir (uses config dir, default is $HOME/.pipecamp/)")
+	datapath = datadir + "index.db"
+	viper.SetConfigFile(cfgFile)
+	viper.AddConfigPath(cfgFile)
+	viper.SetConfigName(".pipecamp")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.

@@ -24,29 +24,28 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/gleicon/pipecamp/searchengine"
+	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/spf13/cobra"
 )
 
 var baseDir *string
-var se searchengine.SearchEngine
-
-func indexInnerCommand(cmd *cobra.Command, args []string) {
-	se.CreateOrOpenIndex(baseDir)
-}
+var datapath string
 
 // indexCmd represents the index command
 var indexCmd = &cobra.Command{
 	Use:   "index",
 	Short: "Creates a searchable index",
 	Long:  `Given $HOME or a basedir, index all files in a way that they can be seqrched with the search command. `,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("index called")
-	},
+	Run:   indexInnerCommand,
+}
+
+func indexInnerCommand(cmd *cobra.Command, args []string) {
+	baseDir = rootCmd.Flags().StringP("basedir", "d", ".", "directory to index")
+	se = searchengine.NewSearchEngine(datapath)
+	fmt.Println("Indexing " + args[0] + " at " + datapath)
+	se.AddDocuments(args[0])
 }
 
 func init() {
 	rootCmd.AddCommand(indexCmd)
-	baseDir = tldrCmd.Flags().StringP("basedir", "d", "", "directory to index down")
-	se := searchengine.NewSearchEngine(indexFile)
 }

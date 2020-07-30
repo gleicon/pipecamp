@@ -23,7 +23,9 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 
+	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/spf13/cobra"
 )
 
@@ -32,9 +34,14 @@ var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "search <terms> - search through pre indexed documents",
 	Long:  `search <term> search through documents indexed with index`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("search called")
-	},
+	Run:   searchInnerCommand,
+}
+
+func searchInnerCommand(cmd *cobra.Command, args []string) {
+	se = searchengine.NewSearchEngine(datapath)
+	terms := strings.Join(args, " ")
+	fmt.Println(terms)
+	fmt.Println(se.Query(terms))
 }
 
 func init() {
