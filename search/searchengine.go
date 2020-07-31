@@ -1,7 +1,6 @@
 package searchengine
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -26,6 +25,13 @@ type MetaDocument struct {
 type Result struct {
 	ID    string  `json:"id"`
 	Score float64 `json:"score"`
+}
+
+// QueryResults holds a slice of returns
+type QueryResults struct {
+	Query    string   `json:"query"`
+	CutScore float64  `json:"cutscore"`
+	Results  []Result `json:"results"`
 }
 
 /*
@@ -78,11 +84,11 @@ func (se *SearchEngine) docSearch(input string) (*bleve.SearchResult, error) {
 
 }
 
-// Search queries, rank and aggregate
-func (se *SearchEngine) search(query string) (string, error) {
+// Query , fetch results, rank and aggregate
+func (se *SearchEngine) Query(query string) (*QueryResults, error) {
 	searchResult, err := se.docSearch(query)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	results := []Result{}
 	for _, doc := range searchResult.Hits {
@@ -90,23 +96,8 @@ func (se *SearchEngine) search(query string) (string, error) {
 			results = append(results, Result{ID: doc.ID, Score: doc.Score})
 		}
 	}
-	res := map[string]interface{}{
-		"query":  query,
-		"result": results,
-	}
-	jsonResult, _ := json.Marshal(res)
-	return string(jsonResult), nil
-}
-
-// Query wraps a bleve search
-func (se *SearchEngine) Query(query string) (string, error) {
-
-	searchResult, err := se.search(query)
-	if err != nil {
-		fmt.Printf("Error searching: %#v\n", err)
-
-	}
-	return searchResult, nil
+	res := QueryResults{Query: query, Results: results, CutScore: 0.1}
+	return &res, nil
 }
 
 func (se *SearchEngine) skipName(name string) bool {
