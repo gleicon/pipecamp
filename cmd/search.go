@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/glamour"
 	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/gleicon/pipecamp/summarizer"
 	"github.com/spf13/cobra"
@@ -48,9 +49,33 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 	se = searchengine.NewSearchEngine(datapath, sm)
 	terms := strings.Join(args, " ")
 
-	fmt.Println(terms)
 	// print terms, ids and summaries
-	fmt.Println(se.Query(terms))
+	queryResults, err := se.Query(terms)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	in := "# Results for " + queryResults.Query + "\n"
+
+	for _, result := range queryResults.Results {
+		summary, err := sm.Fetch(result.ID)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		in = in + fmt.Sprintf("- %s - score: %f\n", result.ID, result.Score)
+		in = in + fmt.Sprintf("\t- _summary:_ %s\n", summary)
+		in = in + fmt.Sprintf("\n")
+
+	}
+	r, _ := glamour.NewTermRenderer(
+		glamour.WithStandardStyle("dark"),
+		glamour.WithWordWrap(160),
+	)
+
+	out, _ := r.Render(in)
+	fmt.Print(out)
+
 }
 
 func init() {
