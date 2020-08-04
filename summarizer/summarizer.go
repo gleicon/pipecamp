@@ -31,12 +31,14 @@ func NewPersistentSummarizer(dbpath string, sentenceCount int) (*PersistentSumma
 	}
 
 	go func() {
-		log.Println("Summarizer Database housekeeping")
-		var ll sync.Mutex
-		ll.Lock()
-		defer ll.Unlock()
-		psz.db.RunValueLogGC(1.0)
-		time.Sleep(10 * time.Minute)
+		for {
+			log.Println("Summarizer Database housekeeping")
+			var ll sync.Mutex
+			ll.Lock()
+			defer ll.Unlock()
+			psz.db.RunValueLogGC(1.0)
+			time.Sleep(10 * time.Minute)
+		}
 	}()
 
 	return &psz, nil
