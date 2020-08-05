@@ -28,6 +28,7 @@ import (
 	"github.com/charmbracelet/glamour"
 	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/gleicon/pipecamp/summarizer"
+	"github.com/muesli/termenv"
 	"github.com/spf13/cobra"
 )
 
@@ -35,13 +36,17 @@ import (
 var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "search <terms> - search through pre indexed documents",
-	Long:  `search <term> search through documents indexed with index`,
-	Run:   searchInnerCommand,
+	Long: `search <term> search through documents indexed with index
+			search -c <term> or search --csv <term> renders output as csv.
+			`,
+	Run: searchInnerCommand,
 }
+var renderCSV *bool
 
 func searchInnerCommand(cmd *cobra.Command, args []string) {
 	var sm *summarizer.PersistentSummarizer
 	var err error
+
 	if sm, err = summarizer.NewPersistentSummarizer(summarizerpath, 3); err != nil {
 		fmt.Println(err)
 		return
@@ -55,7 +60,26 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
+
+	if *renderCSV {
+		fmt.Println("document,score,summary")
+		for _, result := range queryResults.Results {
+			summary, err := sm.Fetch(result.ID)
+			if err != nil {
+				fmt.Println(err)
+				continue
+			}
+			fmt.Printf("%s,%f,%s,\n", result.ID, result.Score, summary)
+
+		}
+		return
+	}
+
+	termenv.ClearScreen()
+
 	in := "# Results for " + queryResults.Query + "\n"
+	in = in + "| document | score | summary |\n"
+	in = in + "| --- | --- | --- |\n"
 
 	for _, result := range queryResults.Results {
 		summary, err := sm.Fetch(result.ID)
@@ -63,14 +87,17 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 			fmt.Println(err)
 			continue
 		}
-		in = in + fmt.Sprintf("- %s - score: %f\n", result.ID, result.Score)
-		in = in + fmt.Sprintf("\t- _summary:_ %s\n", summary)
-		in = in + fmt.Sprintf("\n")
+
+		in = in + fmt.Sprintf("| (%s) | %f ", result.ID, result.Score)
+		if len(summary) > 40 {
+			summary = summary[:40]
+		}
+		in = in + fmt.Sprintf("| %s |  \n", summary)
 
 	}
 	r, _ := glamour.NewTermRenderer(
 		glamour.WithStandardStyle("dark"),
-		glamour.WithWordWrap(160),
+		glamour.WithWordWrap(120),
 	)
 
 	out, _ := r.Render(in)
@@ -80,4 +107,6 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 
 func init() {
 	rootCmd.AddCommand(searchCmd)
+	renderCSV = searchCmd.Flags().BoolP("csv", "c", false, "render as csv")
+
 }

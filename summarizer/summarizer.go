@@ -35,8 +35,8 @@ func NewPersistentSummarizer(dbpath string, sentenceCount int) (*PersistentSumma
 			log.Println("Summarizer Database housekeeping")
 			var ll sync.Mutex
 			ll.Lock()
-			defer ll.Unlock()
 			psz.db.RunValueLogGC(1.0)
+			ll.Unlock()
 			time.Sleep(10 * time.Minute)
 		}
 	}()

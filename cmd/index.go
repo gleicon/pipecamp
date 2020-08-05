@@ -44,7 +44,6 @@ var indexCmd = &cobra.Command{
 func indexInnerCommand(cmd *cobra.Command, args []string) {
 	var sm *summarizer.PersistentSummarizer
 	var err error
-	baseDir = rootCmd.Flags().StringP("basedir", "d", ".", "directory to index")
 	if sm, err = summarizer.NewPersistentSummarizer(summarizerpath, 3); err != nil {
 		fmt.Println(err)
 		return
@@ -56,4 +55,6 @@ func indexInnerCommand(cmd *cobra.Command, args []string) {
 
 func init() {
 	rootCmd.AddCommand(indexCmd)
+	baseDir = indexCmd.Flags().StringP("basedir", "d", ".", "directory to index")
+
 }
