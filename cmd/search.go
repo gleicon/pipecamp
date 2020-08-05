@@ -36,8 +36,10 @@ import (
 var searchCmd = &cobra.Command{
 	Use:   "search",
 	Short: "search <terms> - search through pre indexed documents",
-	Long:  `search <term> search through documents indexed with index`,
-	Run:   searchInnerCommand,
+	Long: `search <term> search through documents indexed with index
+			search -c <term> or search --csv <term> renders output as csv.
+			`,
+	Run: searchInnerCommand,
 }
 var renderCSV *bool
 
