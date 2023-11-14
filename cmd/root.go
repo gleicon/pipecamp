@@ -25,7 +25,6 @@ import (
 	"fmt"
 	"os"
 
-	searchengine "github.com/gleicon/pipecamp/search"
 	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
@@ -33,7 +32,8 @@ import (
 
 var cfgFile string
 var datadir string
-var se *searchengine.SearchEngine
+
+// var se *searchengine.SearchEngine
 var datafile string
 var summarizerpath string
 

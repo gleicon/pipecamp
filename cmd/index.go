@@ -48,7 +48,7 @@ func indexInnerCommand(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-	se = searchengine.NewSearchEngine(datapath, sm)
+	se := searchengine.NewBleveSearchEngine(datapath, sm)
 	fmt.Println("Indexing " + args[0] + " at " + datapath)
 	se.AddDocuments(args[0])
 }

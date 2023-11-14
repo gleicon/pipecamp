@@ -51,7 +51,7 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 		fmt.Println(err)
 		return
 	}
-	se = searchengine.NewSearchEngine(datapath, sm)
+	se := searchengine.NewBleveSearchEngine(datapath, sm)
 	terms := strings.Join(args, " ")
 
 	// print terms, ids and summaries
@@ -64,12 +64,12 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 	if *renderCSV {
 		fmt.Println("document,score,summary")
 		for _, result := range queryResults.Results {
-			summary, err := sm.Fetch(result.ID)
+			summary, err := sm.Fetch(result.Id)
 			if err != nil {
 				fmt.Println(err)
 				continue
 			}
-			fmt.Printf("%s,%f,%s,\n", result.ID, result.Score, summary)
+			fmt.Printf("%s,%f,%s,\n", result.Id, result.Score, summary)
 
 		}
 		return
@@ -82,13 +82,13 @@ func searchInnerCommand(cmd *cobra.Command, args []string) {
 	in = in + "| --- | --- | --- |\n"
 
 	for _, result := range queryResults.Results {
-		summary, err := sm.Fetch(result.ID)
+		summary, err := sm.Fetch(result.Id)
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
 
-		in = in + fmt.Sprintf("| (%s) | %f ", result.ID, result.Score)
+		in = in + fmt.Sprintf("| (%s) | %f ", result.Id, result.Score)
 		if len(summary) > 40 {
 			summary = summary[:40]
 		}
